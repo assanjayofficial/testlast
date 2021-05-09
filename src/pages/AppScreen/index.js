@@ -5,43 +5,42 @@ import { View, Text, AsyncStorage, StyleSheet, TouchableOpacity, ScrollView, Tex
 //Brilliant
 export default class App extends Component {
   state = {
-    isEdit: null,
+    formIsi: null,
     list: [],
-    isLoading: false,
-    editText: '',
+    memuat: false,
+    masukanTugas: '',
   };
   componentDidMount = () => {
-    this.setState({isLoading: true});
-    // AsyncStorage.removeItem('list')
+    this.setState({memuat: true});
     AsyncStorage.getItem('list')
       .then(list => {
         if (list) {
-          this.setState({list: JSON.parse(list), isLoading: false});
+          this.setState({list: JSON.parse(list), memuat: false});
         } else {
-          this.setState({list: [], isLoading: false});
+          this.setState({list: [], memuat: false});
         }
       })
       .catch(err => {
-        this.setState({isLoading: false});
+        this.setState({memuat: false});
       });
   };
-  add = () => {
+  tambahTugas = () => {
     let list = this.state.list;
     list.push('');
     this.setState({list: list});
     this.saveToStorage();
     
-    this.setEdit(list.length-1);
+    this.formPengisian(list.length-1);
   };
-  setEdit = index => {
+  formPengisian = index => {
     if (this.state.isEdit !== index) {
       this.setState({isEdit: index, editText: this.state.list[index]});
     }
   };
-  setList = (text, index) => {
+  daftarTugas = (text, index) => {
     let list = this.state.list;
     list[index] = text;
-    this.setState({list: list, isEdit: null, editText: ''});
+    this.setState({list: list, formIsi: null, editText: ''});
 
     this.saveToStorage();
   };
@@ -49,7 +48,7 @@ export default class App extends Component {
     let data = JSON.stringify(this.state.list);
     AsyncStorage.setItem('list', data);
   };
-  deleteItem = index => {
+  hapusTugas = index => {
     let list = this.state.list;
     list.splice(index, 1);
     this.setState({list: list});
@@ -59,38 +58,38 @@ export default class App extends Component {
   //Eben
   render() {
     return (
-      <ScrollView style={style.container}>
-        <View style={style.header}>
+      <ScrollView style={style.keseluruhanAplikasi}>
+        <View style={style.bagianAwal}>
           <Text style={style.Textatas}>Apa yang perlu diingatkan?</Text>
         </View>
-        {this.state.isLoading ? (
+        {this.state.memuat ? (
           <ActivityIndicator color="#d28888" size="large" />
         ) : (
           <View style={style.body}>
             {this.state.list.map((item, key) => (
               <React.Fragment>
-                {this.state.isEdit === null || this.state.isEdit !== key ? (
+                {this.state.formIsi === null || this.state.formIsi !== key ? (
                   <TouchableOpacity
-                    style={style.item}
+                    style={style.isi}
                     activeOpacity={0.5}
-                    onLongPress={() => this.setEdit(key)}>
-                    <Text style={style.itemText}>{item}</Text>
+                    onLongPress={() => this.formPengisian(key)}>
+                    <Text style={style.isiTeks}>{item}</Text>
                     <TouchableOpacity
-                      style={style.itemDelete}
-                      onPress={() => this.deleteItem(key)}>
-                      <Text style={style.itemDeleteText}>x</Text>
+                      style={style.hapusIsi}
+                      onPress={() => this.hapusTugas(key)}>
+                      <Text style={style.tulisanX}>x</Text>
                     </TouchableOpacity>
                   </TouchableOpacity>
                 ) : null}
-                {this.state.isEdit !== null ? (
-                  key == this.state.isEdit ? (
+                {this.state.formIsi !== null ? (
+                  key == this.state.formIsi ? (
                     <TextInput
-                      style={style.itemInput}
-                      onBlur={() => this.setList(this.state.editText, key)}
+                      style={style.masukanDaftar}
+                      onBlur={() => this.daftarTugas(this.state.masukanTugas, key)}
                       onSubmitEditing={() =>
-                        this.setList(this.state.editText, key)
+                        this.daftarTugas(this.state.masukanTugas, key)
                       }
-                      value={this.state.editText}
+                      value={this.state.masukanTugas}
                       autoFocus
                       onChangeText={editText => this.setState({editText})}
                     />
@@ -98,7 +97,7 @@ export default class App extends Component {
                 ) : null}
               </React.Fragment>
             ))}
-            <TouchableOpacity style={style.tombolTambah} onPress={() => this.add()}>
+            <TouchableOpacity style={style.tombolTambah} onPress={() => this.tambahTugas()}>
               <Text style={style.isiTambah}>Tambahkan</Text>
             </TouchableOpacity>
           </View>
@@ -109,11 +108,11 @@ export default class App extends Component {
 }
 //Fanuel
 const style = StyleSheet.create({
-  container: {
+  keseluruhanAplikasi: {
       backgroundColor: '#5B8A72', 
       height: '100%'
     },
-  header: {
+  bagianAwal: {
     backgroundColor: '#464f41',
     elevation: 5,
     paddingHorizontal: '5%',
@@ -137,29 +136,32 @@ const style = StyleSheet.create({
     fontWeight: '700',
     color : 'white',
   },
-  body: {paddingHorizontal: '4%', paddingVertical: 15},
-  item: {
+  body: {
+    paddingHorizontal: '4%', 
+    paddingVertical: 15
+  },
+  isi: {
     marginBottom: 10,
     backgroundColor: 'white',
     padding: 10,
     minHeight: 50,
     position: 'relative',
   },
-  itemDelete: {
+  hapusIsi: {
     position: 'absolute',
     fontSize: 16,
     padding: 10,
     right: 0,
   },
-  itemDeleteText: {
+  tulisanX: {
     fontSize: 16,
     color : 'red',
   },
-  itemText: {
+  isiTeks: {
     fontSize: 16,
     paddingHorizontal: '1%',
   },
-  itemInput: {
+  masukanDaftar: {
     borderBottomWidth: 1,
     fontSize: 16,
   },
